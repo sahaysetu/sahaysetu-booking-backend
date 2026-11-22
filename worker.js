@@ -153,6 +153,55 @@ async function handle(request, env) {
     }
   }
 
+  
+  // PUBLIC PATIENT BOOKING TRACKING
+  const trackingMatch = path.match(/^\/api\/bookings\/([A-Z0-9-]+)$/i);
+
+  if (trackingMatch && request.method === "GET") {
+    try {
+      await ensureSchema(env.DB);
+
+      const bookingRef = trackingMatch[1].toUpperCase();
+
+      const booking = await env.DB.prepare(`
+        SELECT booking_ref, doctor_name, doctor_specialty,
+               consultation_type, appointment_date, appointment_time,
+               status, created_at
+        FROM sahaysetu_bookings
+        WHERE booking_ref = ?
+      `).bind(bookingRef).first();
+
+      if (!booking) {
+        return json({
+          success: false,
+          message: "Booking reference not found."
+        }, 404, origin);
+      }
+
+      return json({
+        success: true,
+        booking: {
+          bookingRef: booking.booking_ref,
+          doctorName: booking.doctor_name,
+          doctorSpecialty: booking.doctor_specialty,
+          consultationType: booking.consultation_type,
+          appointmentDate: booking.appointment_date,
+          appointmentTime: booking.appointment_time,
+          status: booking.status,
+          createdAt: booking.created_at
+        }
+      }, 200, origin);
+
+    } catch (error) {
+      console.error("Booking tracking failed:", error);
+      return json({
+        success: false,
+        message: "Unable to retrieve booking."
+      }, 500, origin);
+    }
+  }
+
+  
   if (path === "/api/admin/bookings" && request.method === "GET") {
     if (!env.ADMIN_TOKEN || request.headers.get("Authorization") !== `Bearer ${env.ADMIN_TOKEN}`) {
       return json({ success: false, message: "Unauthorized" }, 401, origin);
