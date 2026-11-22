@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sahaysetu-booking-api",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-22",
+  "workers_dev": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sahaysetu-db",
+      "database_id": "0b71c98b-ec2a-4486-b513-5b5bbe37210a"
+    }
+  ]
+}
